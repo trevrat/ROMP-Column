@@ -5,6 +5,8 @@
 // @description  Adds a ROMP column at the end of tables with a "Position" column, checking every 10 seconds and avoiding duplicate ROMP columns.
 // @match        *://*/*
 // @grant        none
+// @updateURL    
+// @downloadURL  
 // ==/UserScript==
 
 (function() {
