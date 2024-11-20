@@ -1,12 +1,12 @@
 // ==UserScript==
 // @name         ROMP Column
 // @namespace    http://tampermonkey.net/
-// @version      2.3
+// @version      2.4
 // @description  Adds a ROMP column at the end of tables with a "Position" column, checking every 10 seconds and avoiding duplicate ROMP columns.
 // @match        *://*/*
 // @grant        none
-// @updateURL    
-// @downloadURL  
+// @updateURL    https://raw.githubusercontent.com/trevrat/ROMP-Column/refs/heads/main/Romp-column.js
+// @downloadURL  https://raw.githubusercontent.com/trevrat/ROMP-Column/refs/heads/main/Romp-column.js
 // ==/UserScript==
 
 (function() {
