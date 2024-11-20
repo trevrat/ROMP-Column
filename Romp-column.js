@@ -5,8 +5,8 @@
 // @description  Adds a ROMP column at the end of tables with a "Position" column, checking every 10 seconds and avoiding duplicate ROMP columns.
 // @match        *://*/*
 // @grant        none
-// @updateURL    https://raw.githubusercontent.com/trevrat/ROMP-Column/refs/heads/main/Romp-column.js
-// @downloadURL  https://raw.githubusercontent.com/trevrat/ROMP-Column/refs/heads/main/Romp-column.js
+// @updateURL    https://raw.githubusercontent.com/trevrat/ROMP-Column/main/Romp-column.js
+// @downloadURL  https://raw.githubusercontent.com/trevrat/ROMP-Column/main/Romp-column.js
 // ==/UserScript==
 
 (function() {
