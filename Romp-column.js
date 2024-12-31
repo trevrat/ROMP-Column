@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         ROMP Column
 // @namespace    http://tampermonkey.net/
-// @version      2.5
-// @description  Adds a ROMP column at the end of tables with a "Position" column, checking every 10 seconds and avoiding duplicate ROMP columns.
+// @version      2.6
+// @description  Adds a ROMP column at the end of tables with a "Position" column, checks every 10 seconds, avoids duplicate ROMP columns, highlights rows based on "Site" matching with distinct lighter colors, and highlights "Brick" cells containing "INFLIGHT".
 // @match        *://*/*
 // @grant        none
 // @updateURL    https://raw.githubusercontent.com/trevrat/ROMP-Column/main/Romp-column.js
@@ -11,6 +11,20 @@
 
 (function() {
     'use strict';
+
+    const pastelColors = [
+        '#FFCCCC', // Very Light Red
+        '#FFE0B2', // Very Light Orange
+        '#FFFFCC', // Very Light Yellow
+        '#D9FFD9', // Very Light Lime
+        '#CCFFFF', // Very Light Cyan
+        '#D0D0FF', // Very Light Blue
+        '#E0CCFF', // Very Light Lavender
+        '#FFCCDB', // Very Light Pink
+        '#FFFFE6', // Lightest Yellow
+        '#E6FFFF'  // Lightest Cyan
+    ];
+    const siteColorMap = new Map();
 
     // Function to process tables and add the ROMP column if "Position" is found
     function processTables() {
@@ -22,15 +36,22 @@
 
         tables.forEach((table, tableIndex) => {
             let positionColumnIndex = -1;
-            let headers = table.querySelectorAll('th.sortable');
             let rompColumnExists = false;
+            let siteColumnIndex = -1;
+            let brickColumnIndex = -1;
 
-            // Check if the "ROMP" column already exists
+            // Check if the "ROMP" column already exists and find the relevant columns
             let headerCells = table.querySelectorAll('th');
-            headerCells.forEach((header) => {
+            headerCells.forEach((header, index) => {
                 if (header.innerText.trim() === "ROMP") {
                     rompColumnExists = true;
                     console.log(`Table ${tableIndex}: 'ROMP' column already exists.`);
+                }
+                if (header.innerText.trim() === "Site") {
+                    siteColumnIndex = index; // Store index of "Site" column
+                }
+                if (header.innerText.trim() === "Brick") {
+                    brickColumnIndex = index; // Store index of "Brick" column
                 }
             });
 
@@ -40,7 +61,8 @@
                 return;
             }
 
-            headers.forEach((header, index) => {
+            // Identify the "Position" column
+            headerCells.forEach((header, index) => {
                 if (header.innerText.trim() === "Position") {
                     positionColumnIndex = index;
                     console.log(`Table ${tableIndex}: Found 'Position' column at index ${index}.`);
@@ -62,9 +84,9 @@
                         let positionCell = cells[positionColumnIndex];
                         let positionValue = positionCell.innerText.trim();
                         // Match and extract the last 9 digits
-                        let match = positionValue.match(/(\d{2})-(\d{2})-(\d{3})-(\d{2})$/);  // Adjusted to only match the last 9 digits
+                        let match = positionValue.match(/(\d{2})-(\d{2})-(\d{3})-(\d{2})$/);
                         if (match) {
-                            let ddeefffgg = `${match[1]}${match[2]}${match[3]}${match[4]}`;  // Construct ddeefffgg string
+                            let ddeefffgg = `${match[1]}${match[2]}${match[3]}${match[4]}`; // Construct ddeefffgg string
                             let rompValue = getRompValue(ddeefffgg);
                             let rompCell = document.createElement('td');
                             rompCell.innerText = rompValue;
@@ -75,6 +97,42 @@
                         // Add empty cells for rows without position data (in case of header or blank rows)
                         let rompCell = document.createElement('td');
                         row.appendChild(rompCell);
+                    }
+
+                    // Check for the "Site" column to highlight rows
+                    if (siteColumnIndex !== -1 && cells.length > siteColumnIndex) {
+                        let siteCell = cells[siteColumnIndex];
+                        let siteValue = siteCell.innerText.trim();
+
+                        // If the site is already assigned a color, use that color; otherwise assign a new one
+                        if (!siteColorMap.has(siteValue)) {
+                            let color = pastelColors[siteColorMap.size % pastelColors.length];
+                            siteColorMap.set(siteValue, color);
+                        }
+
+                        // Set the row color based on the site value, overriding any existing background color
+                        let rowColor = siteColorMap.get(siteValue);
+                        row.style.backgroundColor = rowColor; // Set the entire row's background color
+                        cells.forEach(cell => {
+                            cell.style.backgroundColor = rowColor; // Ensure each cell has the same background color
+                            cell.style.color = 'black'; // Ensure text color is black for visibility
+                        });
+                    } else {
+                        // If no "Site" value, ensure the row background color is reset to default
+                        row.style.backgroundColor = '';
+                        cells.forEach(cell => {
+                            cell.style.backgroundColor = ''; // Reset cell background color to default
+                        });
+                    }
+
+                    // Highlight "Brick" cells containing "INFLIGHT"
+                    if (brickColumnIndex !== -1 && cells.length > brickColumnIndex) {
+                        let brickCell = cells[brickColumnIndex];
+                        if (brickCell.innerText.includes("INFLIGHT")) {
+                            brickCell.style.backgroundColor = "orange"; // Set background color to orange
+                            brickCell.style.color = "black"; // Change text color to black
+                            console.log(`Table ${tableIndex}, Row ${rowIndex}: Highlighted 'Brick' cell containing 'INFLIGHT'.`);
+                        }
                     }
                 });
             }
