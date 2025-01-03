@@ -1,12 +1,12 @@
 // ==UserScript==
 // @name         ROMP Column
 // @namespace    http://tampermonkey.net/
-// @version      2.6
+// @version      2.7
 // @description  Adds a ROMP column at the end of tables with a "Position" column, checks every 10 seconds, avoids duplicate ROMP columns, highlights rows based on "Site" matching with distinct lighter colors, and highlights "Brick" cells containing "INFLIGHT".
 // @match        *://*/*
 // @grant        none
-// @updateURL    https://raw.githubusercontent.com/trevrat/ROMP-Column/main/Romp-column.js
-// @downloadURL  https://raw.githubusercontent.com/trevrat/ROMP-Column/main/Romp-column.js
+// @updateURL    https://raw.githubusercontent.com/trevrat/ROMP-Column/main/Romp-column.user.js
+// @downloadURL  https://raw.githubusercontent.com/trevrat/ROMP-Column/main/Romp-column.user.js
 // ==/UserScript==
 
 (function() {
