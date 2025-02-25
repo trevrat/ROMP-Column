@@ -1,11 +1,11 @@
 // ==UserScript==
-// @name         ROMP Column with Boost Link
+// @name         ROMP Column
 // @namespace    http://tampermonkey.net/
-// @version      3.0
-// @description  Adds ROMP and Boost columns, checks every 10 seconds, avoids duplicates, highlights Site rows with distinct colors, and highlights Brick cells containing "INFLIGHT".
+// @version      2.8
+// @description  Adds a ROMP column at the end of tables with a "Position" column, checks every 10 seconds, avoids duplicate ROMP columns, highlights rows based on "Site" matching with distinct lighter colors, and highlights "Brick" cells containing "INFLIGHT".
 // @author       trevrat
 // @match        *://*/*
-// @grant        https://w.amazon.com/bin/view/Abdoure/dashboard
+// @grant        none
 // @updateURL    https://raw.githubusercontent.com/trevrat/ROMP-Column/main/Romp-column.user.js
 // @downloadURL  https://raw.githubusercontent.com/trevrat/ROMP-Column/main/Romp-column.user.js
 // ==/UserScript==
@@ -14,96 +14,139 @@
     'use strict';
 
     const pastelColors = [
-        '#FFCCCC', '#FFE0B2', '#FFFFCC', '#D9FFD9', '#CCFFFF',
-        '#D0D0FF', '#E0CCFF', '#FFCCDB', '#FFFFE6', '#E6FFFF'
+        '#FFCCCC', // Very Light Red
+        '#FFE0B2', // Very Light Orange
+        '#FFFFCC', // Very Light Yellow
+        '#D9FFD9', // Very Light Lime
+        '#CCFFFF', // Very Light Cyan
+        '#D0D0FF', // Very Light Blue
+        '#E0CCFF', // Very Light Lavender
+        '#FFCCDB', // Very Light Pink
+        '#FFFFE6', // Lightest Yellow
+        '#E6FFFF'  // Lightest Cyan
     ];
     const siteColorMap = new Map();
-
+// Add Boost Column
+if (!boostExists) {
+    let boostCell = document.createElement('td');
+    if (cells.length > assetIndex) {
+        let assetValue = cells[assetIndex].innerText.trim();
+        if (assetValue) {
+            let boostLink = document.createElement('a');
+            boostLink.href = `https://app.boost.aws.a2z.com/platform/work-requests?view=RackInstall&searchInput=${assetValue}`;
+            boostLink.innerText = "Boost Link";
+            boostLink.target = "_blank";
+            boostCell.appendChild(boostLink);
+        }
+    }
+    row.appendChild(boostCell);
+}
+    // Function to process tables and add the ROMP column if "Position" is found
     function processTables() {
         let tables = document.querySelectorAll('table');
-        if (tables.length === 0) return;
+        if (tables.length === 0) {
+            console.log("No tables found on the page.");
+            return;
+        }
 
         tables.forEach((table, tableIndex) => {
-            let positionColumnIndex = -1, rompColumnExists = false;
-            let siteColumnIndex = -1, brickColumnIndex = -1, assetColumnIndex = -1, boostColumnExists = false;
+            let positionColumnIndex = -1;
+            let rompColumnExists = false;
+            let siteColumnIndex = -1;
+            let brickColumnIndex = -1;
 
+            // Check if the "ROMP" column already exists and find the relevant columns
             let headerCells = table.querySelectorAll('th');
             headerCells.forEach((header, index) => {
-                let text = header.innerText.trim();
-                if (text === "ROMP") rompColumnExists = true;
-                if (text === "Boost") boostColumnExists = true;
-                if (text === "Site") siteColumnIndex = index;
-                if (text === "Brick") brickColumnIndex = index;
-                if (text === "Asset") assetColumnIndex = index;
-                if (text === "Position") positionColumnIndex = index;
+                if (header.innerText.trim() === "ROMP") {
+                    rompColumnExists = true;
+                    console.log(`Table ${tableIndex}: 'ROMP' column already exists.`);
+                }
+                if (header.innerText.trim() === "Site") {
+                    siteColumnIndex = index; // Store index of "Site" column
+                }
+                if (header.innerText.trim() === "Brick") {
+                    brickColumnIndex = index; // Store index of "Brick" column
+                }
             });
 
-            if (rompColumnExists && boostColumnExists) return;
+            if (rompColumnExists) {
+                // Skip processing if ROMP column already exists
+                console.log(`Table ${tableIndex}: Skipping ROMP column addition.`);
+                return;
+            }
+
+            // Identify the "Position" column
+            headerCells.forEach((header, index) => {
+                if (header.innerText.trim() === "Position") {
+                    positionColumnIndex = index;
+                    console.log(`Table ${tableIndex}: Found 'Position' column at index ${index}.`);
+                }
+            });
 
             if (positionColumnIndex !== -1) {
-                if (!rompColumnExists) {
-                    let rompHeader = document.createElement('th');
-                    rompHeader.innerText = "ROMP";
-                    table.querySelector('tr').appendChild(rompHeader);
-                }
-                if (!boostColumnExists) {
-                    let boostHeader = document.createElement('th');
-                    boostHeader.innerText = "Boost";
-                    table.querySelector('tr').appendChild(boostHeader);
-                }
+                // Add the ROMP header at the end of the header row
+                let rompHeader = document.createElement('th');
+                rompHeader.innerText = "ROMP";
+                table.querySelector('tr').appendChild(rompHeader);
+                console.log(`Table ${tableIndex}: 'ROMP' column header added at the end of the table.`);
 
                 let rows = table.querySelectorAll('tr');
                 rows.forEach((row, rowIndex) => {
                     let cells = row.querySelectorAll('td');
-                    
+
                     if (cells.length > positionColumnIndex) {
-                        let positionValue = cells[positionColumnIndex].innerText.trim();
+                        let positionCell = cells[positionColumnIndex];
+                        let positionValue = positionCell.innerText.trim();
+                        // Match and extract the last 9 digits
                         let match = positionValue.match(/(\d{2})-(\d{2})-(\d{3})-(\d{2})$/);
-                        let rompValue = match ? getRompValue(`${match[1]}${match[2]}${match[3]}${match[4]}`) : "";
-                        
+                        if (match) {
+                            let ddeefffgg = `${match[1]}${match[2]}${match[3]}${match[4]}`; // Construct ddeefffgg string
+                            let rompValue = getRompValue(ddeefffgg);
+                            let rompCell = document.createElement('td');
+                            rompCell.innerText = rompValue;
+                            row.appendChild(rompCell);
+                            console.log(`Table ${tableIndex}, Row ${rowIndex}: Added ROMP value '${rompValue}' for Position '${positionValue}'.`);
+                        }
+                    } else if (rowIndex > 0) {
+                        // Add empty cells for rows without position data (in case of header or blank rows)
                         let rompCell = document.createElement('td');
-                        rompCell.innerText = rompValue;
                         row.appendChild(rompCell);
-                    } else {
-                        row.appendChild(document.createElement('td'));
                     }
 
-                    if (cells.length > assetColumnIndex) {
-                        let assetValue = cells[assetColumnIndex].innerText.trim();
-                        let boostCell = document.createElement('td');
-                        if (assetValue) {
-                            let boostLink = document.createElement('a');
-                            boostLink.href = `https://app.boost.aws.a2z.com/platform/work-requests?view=RackInstall&searchInput=${assetValue}`;
-                            boostLink.innerText = "Boost Link";
-                            boostLink.target = "_blank";
-                            boostCell.appendChild(boostLink);
-                        }
-                        row.appendChild(boostCell);
-                    } else {
-                        row.appendChild(document.createElement('td'));
-                    }
-
+                    // Check for the "Site" column to highlight rows
                     if (siteColumnIndex !== -1 && cells.length > siteColumnIndex) {
-                        let siteValue = cells[siteColumnIndex].innerText.trim();
+                        let siteCell = cells[siteColumnIndex];
+                        let siteValue = siteCell.innerText.trim();
+
+                        // If the site is already assigned a color, use that color; otherwise assign a new one
                         if (!siteColorMap.has(siteValue)) {
-                            siteColorMap.set(siteValue, pastelColors[siteColorMap.size % pastelColors.length]);
+                            let color = pastelColors[siteColorMap.size % pastelColors.length];
+                            siteColorMap.set(siteValue, color);
                         }
+
+                        // Set the row color based on the site value, overriding any existing background color
                         let rowColor = siteColorMap.get(siteValue);
-                        row.style.backgroundColor = rowColor;
+                        row.style.backgroundColor = rowColor; // Set the entire row's background color
                         cells.forEach(cell => {
-                            cell.style.backgroundColor = rowColor;
-                            cell.style.color = 'black';
+                            cell.style.backgroundColor = rowColor; // Ensure each cell has the same background color
+                            cell.style.color = 'black'; // Ensure text color is black for visibility
                         });
                     } else {
+                        // If no "Site" value, ensure the row background color is reset to default
                         row.style.backgroundColor = '';
-                        cells.forEach(cell => cell.style.backgroundColor = '');
+                        cells.forEach(cell => {
+                            cell.style.backgroundColor = ''; // Reset cell background color to default
+                        });
                     }
 
+                    // Highlight "Brick" cells containing "INFLIGHT"
                     if (brickColumnIndex !== -1 && cells.length > brickColumnIndex) {
                         let brickCell = cells[brickColumnIndex];
                         if (brickCell.innerText.includes("INFLIGHT")) {
-                            brickCell.style.backgroundColor = "orange";
-                            brickCell.style.color = "black";
+                            brickCell.style.backgroundColor = "orange"; // Set background color to orange
+                            brickCell.style.color = "black"; // Change text color to black
+                            console.log(`Table ${tableIndex}, Row ${rowIndex}: Highlighted 'Brick' cell containing 'INFLIGHT'.`);
                         }
                     }
                 });
@@ -111,6 +154,7 @@
         });
     }
 
+    // Function to determine ROMP value based on ddeefffgg as a string
     function getRompValue(ddeefffgg) {
         if (ddeefffgg >= "010100110" && ddeefffgg <= "010101099") return "ROMP 1";
         if (ddeefffgg >= "010101110" && ddeefffgg <= "010101899") return "ROMP 2";
@@ -124,11 +168,12 @@
         if (ddeefffgg >= "010202710" && ddeefffgg <= "010203499") return "ROMP 10";
         if (ddeefffgg >= "010203510" && ddeefffgg <= "010204299") return "ROMP 11";
         if (ddeefffgg >= "010204310" && ddeefffgg <= "010205099") return "ROMP 12";
-        return "";
+        return "";  // No match
     }
 
+    // Check for tables every 10 seconds
     setInterval(() => {
         console.log("Checking for tables with 'Position' column every 10 seconds.");
         processTables();
-    }, 10000);
+    }, 10000);  // 10000 milliseconds = 10 seconds
 })();
