@@ -113,6 +113,25 @@ if (!boostExists) {
                         let rompCell = document.createElement('td');
                         row.appendChild(rompCell);
                     }
+                    // Add Boost Column
+				if (cells.length > assetColumnIndex) {
+					let assetCell = cells[assetColumnIndex];
+					let assetValue = assetCell.innerText.trim();
+   					let boostCell = document.createElement('td');
+
+ 					if (assetValue) {
+						let boostLink = document.createElement('a');
+        				boostLink.href = `https://app.boost.aws.a2z.com/platform/work-requests?view=RackInstall&searchInput=${assetValue}`;
+        				boostLink.innerText = "Boost Link";
+        				boostLink.target = "_blank";
+        				boostCell.appendChild(boostLink);
+    				}
+
+    				row.appendChild(boostCell);
+				} else if (rowIndex > 0) {
+					let boostCell = document.createElement('td');
+    				row.appendChild(boostCell);
+				}
 
                     // Check for the "Site" column to highlight rows
                     if (siteColumnIndex !== -1 && cells.length > siteColumnIndex) {
