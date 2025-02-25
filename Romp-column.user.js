@@ -5,7 +5,7 @@
 // @description  Adds a ROMP column at the end of tables with a "Position" column, checks every 10 seconds, avoids duplicate ROMP columns, highlights rows based on "Site" matching with distinct lighter colors, and highlights "Brick" cells containing "INFLIGHT".
 // @author       trevrat
 // @match        *://*/*
-// @grant        https://w.amazon.com/bin/view/Abdoure/dashboard
+// @grant        none
 // @updateURL    https://raw.githubusercontent.com/trevrat/ROMP-Column/main/Romp-column.user.js
 // @downloadURL  https://raw.githubusercontent.com/trevrat/ROMP-Column/main/Romp-column.user.js
 // ==/UserScript==
@@ -99,25 +99,6 @@
                         let rompCell = document.createElement('td');
                         row.appendChild(rompCell);
                     }
-                    // Add Boost Column
-				if (cells.length > assetColumnIndex) {
-					let assetCell = cells[assetColumnIndex];
-					let assetValue = assetCell.innerText.trim();
-   					let boostCell = document.createElement('td');
-
- 					if (assetValue) {
-						let boostLink = document.createElement('a');
-        				boostLink.href = `https://app.boost.aws.a2z.com/platform/work-requests?view=RackInstall&searchInput=${assetValue}`;
-        				boostLink.innerText = "Boost Link";
-        				boostLink.target = "_blank";
-        				boostCell.appendChild(boostLink);
-    				}
-
-    				row.appendChild(boostCell);
-				} else if (rowIndex > 0) {
-					let boostCell = document.createElement('td');
-    				row.appendChild(boostCell);
-				}
 
                     // Check for the "Site" column to highlight rows
                     if (siteColumnIndex !== -1 && cells.length > siteColumnIndex) {
