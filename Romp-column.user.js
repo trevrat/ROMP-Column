@@ -26,21 +26,7 @@
         '#E6FFFF'  // Lightest Cyan
     ];
     const siteColorMap = new Map();
-// Add Boost Column
-if (!boostExists) {
-    let boostCell = document.createElement('td');
-    if (cells.length > assetIndex) {
-        let assetValue = cells[assetIndex].innerText.trim();
-        if (assetValue) {
-            let boostLink = document.createElement('a');
-            boostLink.href = `https://app.boost.aws.a2z.com/platform/work-requests?view=RackInstall&searchInput=${assetValue}`;
-            boostLink.innerText = "Boost Link";
-            boostLink.target = "_blank";
-            boostCell.appendChild(boostLink);
-        }
-    }
-    row.appendChild(boostCell);
-}
+
     // Function to process tables and add the ROMP column if "Position" is found
     function processTables() {
         let tables = document.querySelectorAll('table');
