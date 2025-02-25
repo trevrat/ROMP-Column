@@ -5,7 +5,7 @@
 // @description  Adds a ROMP column at the end of tables with a "Position" column, checks every 10 seconds, avoids duplicate ROMP columns, highlights rows based on "Site" matching with distinct lighter colors, and highlights "Brick" cells containing "INFLIGHT".
 // @author       trevrat
 // @match        *://*/*
-// @grant        none
+// @grant        https://w.amazon.com/bin/view/Abdoure/dashboard
 // @updateURL    https://raw.githubusercontent.com/trevrat/ROMP-Column/main/Romp-column.user.js
 // @downloadURL  https://raw.githubusercontent.com/trevrat/ROMP-Column/main/Romp-column.user.js
 // ==/UserScript==
